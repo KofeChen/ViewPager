@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1379543_m1ib9557v4.css">
+  <title>ViewPager</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    ul li {
+      list-style: none;
+    }
+
+    .viewCt {
+      position: relative;
+      width: 320px;
+      height: 180px;
+      margin: 30px auto;
+      overflow: hidden;
+    }
+
+    .imgCt {
+      position: absolute;
+      height: 180px;
+    }
+    .imgCt::after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+    .imgCt li {
+      float: left;
+    }
+    .imgCt img {
+      width: 320px;
+      height: 180px;
+    }
+
+    .btn {
+      position: absolute;
+      top: 50%;
+      transform: translate(0, -50%);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.6;
+    }
+    .btn:hover {
+      opacity: 1;
+    }
+    .btn span {
+      color: #ccc;
+      font-size: 20px;
+    }
+    .preBtn {
+      left: 15px;
+    }
+    .nextBtn {
+      right: 15px;
+    }
+
+    .bullet {
+      position: absolute;
+      left: 50%;
+      bottom: -5%;
+      transform: translate(-50%, -50%);
+    }
+    .bullet li {
+      display: inline-block;
+      margin: 5px;
+      width: 15px;
+      height: 3px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    .bullet li a {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .bullet li.active {
+      background-color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewCt">
+    <ul class="imgCt">
+      <li><a href="#"><img src="1.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="2.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="3.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="4.jpg" alt="#"></a></li>
+    </ul>
+    <a href="#" class="btn preBtn"><span class="iconfont icon-pre"></span></a>
+    <a href="#" class="btn nextBtn"><span class="iconfont icon-next"></span></a>
+    <ul class="bullet">
+      <li class="active"><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+    </ul>
+  </div>
+
+  <div class="viewCt">
+    <ul class="imgCt">
+      <li><a href="#"><img src="1.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="2.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="3.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="4.jpg" alt="#"></a></li>
+    </ul>
+    <a href="#" class="btn preBtn"><span class="iconfont icon-pre"></span></a>
+    <a href="#" class="btn nextBtn"><span class="iconfont icon-next"></span></a>
+    <ul class="bullet">
+      <li class="active"><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+    </ul>
+  </div>
+
+  <div class="viewCt">
+    <ul class="imgCt">
+      <li><a href="#"><img src="1.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="2.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="3.jpg" alt="#"></a></li>
+      <li><a href="#"><img src="4.jpg" alt="#"></a></li>
+    </ul>
+    <a href="#" class="btn preBtn"><span class="iconfont icon-pre"></span></a>
+    <a href="#" class="btn nextBtn"><span class="iconfont icon-next"></span></a>
+    <ul class="bullet">
+      <li class="active"><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+      <li><a href="#"></a></li>
+    </ul>
+  </div>
+
+  <script>
+    function ViewPager($ct) {
+      this.init($ct)
+      this.bind()
+    }
+
+    ViewPager.prototype = {
+      init: function($ct) {
+        this.$viewCt = $ct
+        this.$imgCt = $ct.find('.imgCt')
+        this.$imgs = $ct.find('.imgCt>li')
+        this.index = 0
+        this.isAnimate = false
+        this.imgWidth = $ct.find('.imgCt li').width()
+        this.imgCount = $ct.find('.imgCt li').length
+        this.$preBtn = $ct.find('.preBtn')
+        this.$nextBtn = $ct.find('.nextBtn')
+        this.$bullet = $ct.find('.bullet li')
+
+        this.$imgCt.append(this.$imgs.first().clone())
+        this.$imgCt.prepend(this.$imgs.last().clone())
+        this.$imgCt.css('width', (this.imgCount + 2)*this.imgWidth)
+        this.$imgCt.css('left', -this.imgWidth)
+        this.autoPlay()
+      },
+      bind: function() {
+        var _this = this
+
+        this.$viewCt.on('mouseout', function() {
+          _this.autoPlay()
+        })
+        this.$viewCt.on('mouseover', function() {
+          _this.closeAuto()
+        })
+        this.$preBtn.on('click', function() {
+          _this.preScroll()
+        })
+        this.$nextBtn.on('click', function() {
+          _this.nextScroll()
+        }),
+        this.$bullet.on('click', function() {
+          _this.$imgCt.animate({
+            left: '-=' + ($(this).index() - _this.index)*_this.imgWidth
+          })
+          _this.index = $(this).index()
+          _this.setBullet()
+        })
+      },
+      preScroll: function() {
+        if (this.isAnimate) return
+        this.isAnimate = true
+        var _this = this
+        this.$imgCt.animate({
+          left: '+=' + this.imgWidth
+        },function() {
+          _this.index --
+          if (_this.index < 0) {
+            _this.$imgCt.css('left', -_this.imgWidth*_this.imgCount)
+            _this.index += _this.imgCount
+          }
+          _this.setBullet()
+          _this.isAnimate = false
+        })
+      },
+      nextScroll: function() {
+        if (this.isAnimate) return
+        this.isAnimate = true
+        var _this = this
+        this.$imgCt.animate({
+          left: '-=' + this.imgWidth
+        },function() {
+          _this.index ++
+          if (_this.index > _this.imgCount-1) {
+            _this.$imgCt.css('left', -_this.imgWidth)
+            _this.index = 0
+          }
+          _this.setBullet()
+          _this.isAnimate = false
+        })
+      },
+      setBullet: function() {
+        this.$bullet.eq(this.index).addClass('active')
+            .siblings().removeClass('active')
+      },
+      autoPlay: function() {
+        var _this = this
+        this.clock = setInterval(function() {
+          _this.nextScroll()
+        },3000)
+      },
+      closeAuto: function() {
+        clearInterval(this.clock)
+      }
+    }
+
+    $.fn.autoViewPager = function() {
+      console.log(this)
+      $.each(this, function(index, node) {
+        console.log(index)
+        new ViewPager($(node))
+      })
+    }
+
+    $('.viewCt').autoViewPager()
+
+  </script>
+</body>
+</html>
